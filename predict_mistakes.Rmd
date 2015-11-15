@@ -1,0 +1,73 @@
+---
+output: 
+  html_document: 
+    keep_md: yes
+---
+# Using motion sensors and machine learning to predict common weightlifting mistakes.
+
+### Introduction
+Mistakes when performing weightlifting exercises are inefficient and can lead to serious injury when exercises are performed at too high a load or by inexperienced athletes. There are several common errors well known in the professional weightlifting community, but despite being common, it is often difficult, if not impossible, to correct them without proper identification, which normally requires an experienced trainer. Detailed in this report is an attempt to identify four common mistakes made when performing a dumbbell biceps curl using sensor data and machine learning algorithms. The original data were collected by Velloso *et. al.* (1) and more information about the collection methods and feature extraction can be found in ref. 1. Considered here are simply five different classes A - E, where A is the exercise performed correctly, and the other four classes (B - E) are common mistakes. The dataset was preprocessed to find a more appropriate range, and a standard random forest classifier was used to make predictions about the class of the readings.
+
+###Data Processing
+Initial processing of the data included removing variables that were mostly empty, or only contained window averages. Despite the utility of including such derived qualities in the normal course of analyzing data similar to these, the purpose here was to predict the class of several single reps along only one window, thus data not included in this subset was also not evaluated in the training model. Of the original 160 variables, 53, including the classifier variable, were kept through the initial processing stage. Initial graphs and data exploration are not shown here.
+
+```{r, warning=FALSE, message=FALSE}
+library(caret)
+library(randomForest)
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+data <- read.csv("pml-training.csv")
+keep <- c("roll_belt", "pitch_belt", "yaw_belt", "total_accel_belt", "gyros_belt_x", "gyros_belt_y", "gyros_belt_z", "accel_belt_x", "accel_belt_y", "accel_belt_z", "magnet_belt_x", "magnet_belt_y", "magnet_belt_z", "roll_arm", "pitch_arm", "yaw_arm", "total_accel_arm", "gyros_arm_x", "gyros_arm_y", "gyros_arm_z", "accel_arm_x", "accel_arm_y", "accel_arm_z", "magnet_arm_x", "magnet_arm_y", "magnet_arm_z", "roll_dumbbell", "pitch_dumbbell", "yaw_dumbbell", "total_accel_dumbbell", "gyros_dumbbell_x", "gyros_dumbbell_y", "gyros_dumbbell_z", "accel_dumbbell_x", "accel_dumbbell_y", "accel_dumbbell_z", "magnet_dumbbell_x", "magnet_dumbbell_y", "magnet_dumbbell_z", "roll_forearm", "pitch_forearm", "yaw_forearm", "total_accel_forearm", "gyros_forearm_x", "gyros_forearm_y", "gyros_forearm_z", "accel_forearm_x", "accel_forearm_y", "accel_forearm_z", "magnet_forearm_x", "magnet_forearm_y", "magnet_forearm_z", "classe")
+data2 <- data[keep]
+inTrain <- createDataPartition(y=data2$classe, p=0.75, list=F)
+training <- data2[inTrain,]
+testing <- data2[-inTrain,]
+```
+
+The already classified data from the "pml-training" data were split into a training dataset (75%) and a testing (25%) dataset using the caret package. Several preprocessing modes were evaluated, including a Yeo-Johnson transformation (due to the negative data), centering on the mean, and scaling by the mean and deviation. Principal component analysis (PCA) was also evaluated. PCA typically returned 25 components with a threshold of 0.95. Application of a random forest model on the principal components returned 0.97 (0.0032 standard deviation) in sample accuracy with the best fitting models. Further evaluation determined that simply adjusting the range to be 0.0-1.0 for all of the 52 collected variables both provided better accuracy, and easier interpretation.
+
+###Results and Discussion
+#####Training    
+Examination of the dataset revealed wide numerical ranges for all the the variables collected, enough to skew most prediction methods. As a first step, the data were centered and scaled about the mean, but this proved inadequate for robust prediction. PCA was also considered and discarded as discussed above. Finally a simple range was applied. This re-scales the training data to be on a scale from 0-1. Due to the nature of the classes of mistakes (some involved hip motion, others are or elbow motion), and the locations of the sensors (belt, forearm, hand, dumbbell), all the the ranged variables were used for training the predictor. A standard random forest model in the R caret package was trained in order to make predictions for the class for the "pml-testing" dataset. In addition, summary statistics for the model analysis are seen below.
+
+```{r cache=TRUE, warning=FALSE, message=FALSE}
+preproc <- preProcess(training[,-53], method = "range")
+training2 <- predict(preproc, training[,-53])
+training2$classe <- training$classe
+testing2 <- predict(preproc, testing[-53])
+testing2$classe <- testing$classe
+model <- train(classe~., data=training2, method = "rf", trControl = trainControl("cv"), number=3)
+model
+```
+
+The algorithm was trained on nearly 15,000 examples, resulting in an **in sample accuracy of `r round(model$result[1,2], 3)`**. At least for in sample prediction, this classifier scheme is nearly perfect. The 20 most important variables can be seen below.
+
+```{r Variable Importance, echo = FALSE}
+modelvar <- varImp(model)
+plot(modelvar, top = 20, xlab="Importance (as % of most important)")
+```
+
+Generally the belt and dumbbell measurements are more important for prediction, but the forearm plays a role as well. The high in sample accuracy on the taring set was encouraging, but needed more validation.   
+
+#####Testing    
+In order to estimate the out of sample error, and cross-validate the feature selection, data processing, and prediction algorithm, the same procedure was used on the held back test set. 25% of the total trainin data was used for validation.
+
+```{r}
+predictions <- predict(model, testing2)
+testing2$correct <- predictions==testing2$classe
+confusionMatrix(predictions, testing2$classe)
+```
+
+the **out of sample accuracy is `r round(postResample(predictions, testing2$classe)[[1]], 3)`**. Thus the estimate for general out of sample error is expected to be fairly similar, provided the data are collected in the same manner. The out of sample error, by other measures, as seen in the statistics table above, is also negligible. Clearly motion sensors and rigorous analysis of the data provided can achieve excellent preditions it determining some common error in weightlifting.
+
+###Conclusions
+It is unlikely that all of the 52 well populated variables were truly needed to obtain an accurate prediction of the class of dumbbell lifting mistake, but the predictive power and accuracy was quite good using all of the variables. And clearly at least three types of general measurements needed to be used, as the classification categories included both hip, arm and dumbbell positioning mistakes. Ranging the variables to all be on a similar scale seemed to be all the preprocessing needed, and in fact more exotic methods provided a poorer predictive performance. In the end, all 20 of the examples requested were predicted correctly, which was the goal.
+
+###References
+1. Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+2. R, version 3.0.3, R Core Team (2013). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. [http://www.R-project.org/](http://www.R-project.org/).
+3. RStudio, version 0.98.501
+4. Max Kuhn. Contributions from Jed Wing, Steve Weston, Andre Williams, Chris Keefer, Allan Engelhardt, Tony Cooper, Zachary Mayer and the R Core Team (2014). caret: Classification and Regression Training. R package version 6.0-30. [http://CRAN.R-project.org/package=caret](http://CRAN.R-project.org/package=caret).
+5. A. Liaw and M. Wiener (2002). Classification and Regression by randomForest. R News 2(3),
+  18--22.

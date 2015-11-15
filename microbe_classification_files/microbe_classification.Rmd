@@ -1,0 +1,135 @@
+---
+title: "Classification of Microbes"
+author: "Matthew Honaker"
+output: 
+  html_document: 
+    keep_md: yes
+---
+##Introduction
+Analysis and predictions using data from the SeaFlow instrument, developed in the [Armbrust Lab](http://http://armbrustlab.ocean.washington.edu/). This is a flow cytometry instrument which is deployed off reserach vessels in the ocean to collect data and categorize ocean based microbial life. Flow cytometry uses the reflection and refcraction of laser light at different wavelengths to gather information about size and pigmentation of single cell organisms flowing through a caplillary.
+
+A series of questions were posed for this exercise, and a sample data set was provided. The sample dataset was 21 minutes of collected data from the instrument, formatted into a CSV file. The excercise was to have been completed in R. All code used below is my own. While I have tried to be clear, this document is *not* intended to be a full report, and is not formatted as such.
+
+```{r, message=FALSE, warning=FALSE}
+# a little set up
+library(ggplot2); library(caret); library(randomForest)
+library(rpart); library(tree); library(e1071)
+library(doParallel)
+
+#multi-core use
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+
+#load the data
+data <- read.csv("seaflow_21min.csv")
+```
+
+**Question 1:** How many particles labeled "synecho" are in the file provided?
+```{r}
+sum(data$pop == 'synecho')
+```
+
+**Question 2:** What is the 3rd Quantile of the field fsc_small?
+```{r}
+summary(data$fsc_small)
+```
+
+**Question 3:** What is the mean of the variable "time" for your training set?
+Note that it was specified that the sample dataset was to be divided into two equal halves for this exercise.
+```{r}
+intrain1 <- createDataPartition(y=data$pop, p=0.5, list=F)
+train1 <- data[intrain1,]
+test1 <- data[-intrain1,]
+mean(train1$time)
+```
+
+**Question 4:** Plot pe vs. chl_small. Particles labeled ultra should appear to be somewhat "mixed" with two other populations of particles. Which two populations? (see plot)
+```{r}
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+ggplot(train1, aes(x=pe, y=chl_small, color=pop)) + geom_point(shape=1) + scale_colour_manual(values=cbPalette)
+```
+
+The next series of questions (5, 6, 7) were to be answered by training a decision tree.
+```{r, cache=TRUE}
+model2 <- train(pop ~ fsc_small + fsc_perp + fsc_big + pe + chl_big + chl_small, data=train1, method="rpart2")
+print(model2$finalModel)
+```
+
+**Question 5:** Which populations, if any, is your tree incapable of recognizing?
+
+Crypto is not on any branch, there are too few examples in this case.
+
+**Question 6:** What is the value of the threshold on the pe field learned in your model?
+
+The threshold for going down the pe branch is 5004.
+
+**Question 7:** Which variables appear to be most important in predicting the class population?
+
+The most important variables are the pe and chl_small variables.
+
+**Question 8:** How accurate was your decision tree on the test data? Enter a number between 0 and 1.
+```{r, cache=TRUE}
+predictions2 <- predict(model2, test1)
+sum(predictions2 == test1$pop) / length(test1$pop)
+```
+
+**Question 9:** What was the accuracy of your random forest model on the test data?
+```{r, cache=TRUE}
+model3 <- train(pop ~ fsc_small + fsc_perp + fsc_big + pe + chl_big + chl_small, data=train1, method="rf")
+predictions3 <- predict(model3, test1)
+sum(predictions3 == test1$pop) / length(test1$pop)
+```
+
+**Question 10:** What are the most important variables in terms of the gini impurity measure?
+```{r}
+varImp(model3)
+```
+
+**Question 11:** What is the accuracy of your support vector machine model on the test data?
+```{r, cache=TRUE}
+model4 <- svm(pop ~ fsc_small + fsc_perp + fsc_big + pe + chl_big + chl_small, data = train1)
+predictions4 <- predict(model4, test1)
+sum(predictions3 == test1$pop) / length(test1$pop)
+```
+
+**Question 12:** Construct a confusion matrix for each of the three models. What is the most common error that the models make?
+
+Ultra is mistaken for pico...see confusion matricies below
+
+**Decision Tree**
+```{r}
+confusionMatrix(predictions2, test1$pop)
+```
+
+**Random Forest**
+```{r}
+confusionMatrix(predictions3, test1$pop)
+```
+
+**SVM**
+```{r}
+confusionMatrix(predictions4, test1$pop)
+```
+
+**Question 13:** The variables in this dataset were assumed to continuous, but one of them only takes on a few discreet values, suggesting a problem, Which variable exhibits this problem?
+
+fsc_big exhibits this problem, with only 6 different values.
+```{r}
+length(unique(data$fsc_small))
+length(unique(data$fsc_perp))
+length(unique(data$fsc_big))
+length(unique(data$pe))
+length(unique(data$chl_small))
+length(unique(data$chl_big))
+```
+
+**Question 14:** After removing data associated with file_id 208, what was the effect on the accuracy of your svm model?
+```{r, cache=TRUE}
+data2 <- data[!data$file_id == 208,]
+intrain2 <- createDataPartition(y=data2$pop, p=0.5, list=F)
+train2 <- data2[intrain2,]
+test2 <- data2[-intrain2,]
+model5 <- svm(pop ~ fsc_small + fsc_perp + fsc_big + pe + chl_big + chl_small, data = train2)
+predictions5 <- predict(model5, test2)
+sum(predictions5 == test2$pop) / length(test2$pop) - sum(predictions3 == test1$pop) / length(test1$pop)
+```
