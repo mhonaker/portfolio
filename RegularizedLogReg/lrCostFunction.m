@@ -36,25 +36,17 @@ grad = zeros(size(theta));
 %           grad = grad + YOUR_CODE_HERE (using the temp variable)
 %
 %
-%  The code below (from me) is the same as the code that I wrote for the regularized 
-%  logistic regression cost function, which I had already vectorized.
 
-
-% computing the sigmoidal version of h(x) see also sigmoid.m for the sigmoid function
+% computing the sigmoidal version of h(x) 
 h = sigmoid(X * theta);
 
-% setting the first parameter (theta(1) = theta0 from notes) to 0 so it will not be included in the regularization
-% note that the h(x) is calculated above with the fitted thetas
+% setting the first parameter to 0 so it will not be included in the regularization
 theta(1) = 0;
 
-% computing the regularized cost function for logistic regression. y is transposed so the items will sum.
-% the theta^2 is set up as transpose, but first parameter (theta0 from notes) is now 0 for the regularization
+% computing the regularized cost function for logistic regression
 J = ((1/m) * (-y' * log(h) - ((1 - y') * log(1 - h)))) + ((lambda/(2 * m)) * (theta' * theta ));
 
 % computing the gradient of the cost for regularized logistic regression.
-% mostly identical to the linear regression example, but with different h(x), and note that again
-% the first parameter is not regularized.
-
 grad = (1/m) * (X' * (h - y)) + (lambda/m) * theta;
 
 % =============================================================

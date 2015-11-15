@@ -23,11 +23,9 @@ sigma2 = zeros(n, 1);
 
 
 % compute the mean of X, column-wise, 
-% then take the inverse of that to return a vector of appropriate dimensions 
 mu = mean(X)';
 
-% do the same thing with the variance, with option 1 passes in to normalize by N
-% and not N-1 in this case.
+% do the same thing with the variance
 sigma2 = var(X, 1)';
 
 % =============================================================

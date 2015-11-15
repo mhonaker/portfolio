@@ -20,14 +20,12 @@ grad = zeros(size(theta));
 % Note: grad should have the same dimensions as theta
 %
 
-% computing the sigmoidal version of h(x) see also sigmoid.m for the sigmoid function
 h = sigmoid(X * theta);
 
-% computing the cost function for logistic regression. y is transposed so the items will sum.
+% cost function for logistic regression y is transposed so the items will sum
 J = (1/m) * (-y' * log(h) - ((1 - y') * log(1 - h)));
 
-% computing the gradient of the cost for simple logistic regression.
-% mostly identical to the linear regression example, but with different h(x)
+% gradient of the logistic regression cost function
 grad = (1/m) * (X' * (h - y));
 
 % =============================================================

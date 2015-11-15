@@ -14,14 +14,7 @@ X_poly = zeros(numel(X), p);
 %               column of X contains the values of X to the p-th power.
 %
 %
-%%the below commented out code from from the internet, but I figured out how to do it
-%a different way 
-%X_poly(:,1) = X;
 
-%for i=2:p
-%	X_poly(:,i) = X .* X_poly(:,i-1);
-%end
- %this is my code. basically I am just adding X to the ith power to a new matrix, X-poly 
 for i=1:p
 	X_poly(:,i) = X.^i;
 end

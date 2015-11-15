@@ -19,19 +19,18 @@ grad = zeros(size(theta));
 %               You should set J to the cost and grad to the gradient.
 %
 
-%calculate h of x, basically what y is calculated to be with some parameters(theta)
+% calculate h of x, basically what y is calculated to be with some parameters(theta)
 h = X*theta;
 
-%replace the first column of theta with zeros, so that they are not regularized in the cost function
-%or gradient
+% replace the first column of theta with zeros, so that they are not regularized
 theta(1) = 0;
 
-%compute the regularized linear regression cost. note the use of h for the first term where
-%theta would appear, but the theta with zeros in the regularization term (after the +)
+% compute the regularized linear regression cost. note the use of h for the first term where
+% theta would appear, but the theta with zeros in the regularization term (after the +)
 J = (1/(2*m)) * sum((h - y).^2) + (lambda/(2*m)) * sum(theta.^2);
 
-%compute the gradient for the linear regression. Basically this is the partial derivative 
-%of the cost function with respect to theta
+% compute the gradient for the linear regression
+% same as thepartial derivative of the cost function with respect to theta
 grad = (1/m) * (X' * (h - y)) + (lambda/m) * theta;
 
 % =========================================================================

@@ -61,34 +61,36 @@ Theta2_grad = zeros(size(Theta2));
 %               the regularization separately and then add them to Theta1_grad
 %               and Theta2_grad from Part 2.
 %
-%%%%%%%%% what follows is my code   %%%%%%%%%%%%%
 
-X = [ones(m, 1) X];       % add ones to the first column of the data matrix as usual
+% add ones to the first column
+X = [ones(m, 1) X];
 
-Ym = [1:num_labels] == y; %create a matrix based on y values so that each y class (num_labels) is a vector of a 1 and 0's
+% each y class (num_labels) is a vector of a 1 and 0's
+Ym = [1:num_labels] == y;
 
 % computing the cost follows:
 
-z2 = X * Theta1';                 % compute z2 - matrix of features (X) times the transpose of parameters/weights (Theta1)
-a2 = sigmoid(z2);                 % compute the activation of the hidden layer by taking the sigmoids of values calculated above
-a2 = [ones(size(a2,1),1), a2];    % add a column of ones to the beginning of a2 matrix for the bias unit
-h = sigmoid(a2 * Theta2');        % calculate the output layer activation - these are also the "calculated y values"
+% matrix of features (X) times the transpose of parameters/weights (Theta1)
+z2 = X * Theta1';
+
+% compute the activation of the hidden layer
+a2 = sigmoid(z2);
+
+% bias layer addition
+a2 = [ones(size(a2,1),1), a2];
+
+% output layer activation
+h = sigmoid(a2 * Theta2');
 
 % compute regularization
-% the matrices of parameters (Theta1 and Theta2) are individually squared element-wise, skipping the first column
-% the columns are summed into a row vector, which is then summed into a scalar, I think it happens in this order
-% but it is summed in one direction, then the other to produce the scalar
 reg = (lambda/(2*m)) * (sum(sum(Theta1(:,2:end).^2)) + sum(sum(Theta2(:,2:end).^2)));
 
 % compute the cost via logistic regression cost function
-% here the matrix of actual y values (Ym) as vectors is multiplied element-wise by the "calculated y values" (h) 
 J = (1/m) * sum(sum((-Ym) .* log(h) - (1 - Ym) .* log(1 - h)));
-J += reg;                          % adding the regularization to the cost                             
-
+J += reg;                             
 
 % computing the back propagation
 d3 = h - Ym;
-%d2 = (d3 * Theta2 .* sigmoidGradient([ones(size(z2, 1), 1) z2]))(:,2:end);
 d2 = (d3 * Theta2(:, 2:end)) .* sigmoidGradient(z2);
 
 D1 = d2' * X;
@@ -96,17 +98,6 @@ D2 = d3' * a2;
 
 Theta1_grad = D1/m + (lambda/m) * [zeros(size(Theta1,1),1) Theta1(:, 2:end)];
 Theta2_grad = D2/m + (lambda/m) * [zeros(size(Theta2,1),1) Theta2(:, 2:end)];
-
-
-
-
-
-
-
-
-
-
-% -------------------------------------------------------------
 
 % =========================================================================
 

@@ -23,17 +23,14 @@ for epsilon = min(pval):stepsize:max(pval)
     % Note: You can use predictions = (pval < epsilon) to get a binary vector
     %       of 0's and 1's of the outlier predictions
 	
-	% take the vector of probabilities, pval, from the validation set and compare
-	% them to epsilon. if less than epsilon, then it is an anomaly.
-	% this returns a vector of predictions, p.
+	% if less than epsilon, then it is an anomaly
+	% returns a vector of predictions, p.
 	p = (pval < epsilon);
 	
-	% calculate the number of true positives, tp, by summing the logical TRUE
-	% values (1 = True), of the below comparators, where both prediction using
-    % the validation set and the actual prediction caught the anomaly (p = 1).	
+	% calculate the number of true positives
 	tp = sum((p == 1) & (yval == 1));
 	
-	% calculate the false positives, fp, in a similar manner to above
+	% calculate the false positives, fp
 	fp = sum((p == 1) & (yval == 0));
 	
 	% and finally the false negatives
