@@ -1,7 +1,7 @@
 ##Collections
 
 This repo is a collection of small projects and investigations. For the most part, these projects were completed as part of coursework, though not exclusively. I have denoted in each case when the work was not my own. Below is brief summary of items that may be found here.
- I also have a repo for a current independent project, [hetaira](https://github.com/mhonaker/hetaira)
+ I also have a repo for a current independent project, [hetaira](https://github.com/mhonaker/hetaira).
 
 * **graphs1.py**
     A collecttion of standard graph data structure construction and analysis routines, written in python. Included are methods to construct fully complete graphs, canonical ER graphs, and DPA graphs. Or text files representing grahs can be loaded. The distributions of node and in-degrees were also examined.
@@ -16,7 +16,7 @@ This repo is a collection of small projects and investigations. For the most par
     Contains an implementation of the Needleman-Wunsch algorithm, and demonstrations of both local and global sequence alignments.
 
 * **twitter_analysis.py**
-    This file contains the code used for a project whereupon I comleted a light analysis of some Twitter data scraped from the live feed using the Twitter API. The assocoated twittersteam.py was *not* written by me.
+    This file contains the code used for a project whereupon I comleted a light analysis of some Twitter data scraped from the live feed using the Twitter API. The associated twittersteam.py was *not* written by me.
 
 * **MapReduceAnswers.py**
     Located hereis the python code used to complete a small project using the MapReduce framework. This was run on top of the associated MapReduce.py, which was also *not* written by me.
