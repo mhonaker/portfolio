@@ -1,9 +1,9 @@
-##Introduction
+## Introduction
 
 For the first part of the assignment we were to work with an sqlite3 database file, consisting of a single table, fequency(docid, term, count). Each docid was the identification of a particular document, term is an English word, and count is the number of time that term appeared in the document refered to by docid. The second part of the assignment used another sqlite3 database file representing a sparse matrix where two matricies, A and B were represented as [row number, column number, value].
 
 
-##Problem Set 1 - Basic Relational Algebra
+## Problem Set 1 - Basic Relational Algebra
 a.  Write a SQL statement to select the records where the docid = 10398_txt_earn. Report the count of the records returned.
 
 ```SQL
