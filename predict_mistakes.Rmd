@@ -1,8 +1,3 @@
----
-output: 
-  html_document: 
-    keep_md: yes
----
 # Using motion sensors and machine learning to predict common weightlifting mistakes.
 
 ### Introduction
@@ -27,8 +22,8 @@ testing <- data2[-inTrain,]
 
 The already classified data from the "pml-training" data were split into a training dataset (75%) and a testing (25%) dataset using the caret package. Several preprocessing modes were evaluated, including a Yeo-Johnson transformation (due to the negative data), centering on the mean, and scaling by the mean and deviation. Principal component analysis (PCA) was also evaluated. PCA typically returned 25 components with a threshold of 0.95. Application of a random forest model on the principal components returned 0.97 (0.0032 standard deviation) in sample accuracy with the best fitting models. Further evaluation determined that simply adjusting the range to be 0.0-1.0 for all of the 52 collected variables both provided better accuracy, and easier interpretation.
 
-###Results and Discussion
-#####Training    
+### Results and Discussion
+##### Training    
 Examination of the dataset revealed wide numerical ranges for all the the variables collected, enough to skew most prediction methods. As a first step, the data were centered and scaled about the mean, but this proved inadequate for robust prediction. PCA was also considered and discarded as discussed above. Finally a simple range was applied. This re-scales the training data to be on a scale from 0-1. Due to the nature of the classes of mistakes (some involved hip motion, others are or elbow motion), and the locations of the sensors (belt, forearm, hand, dumbbell), all the the ranged variables were used for training the predictor. A standard random forest model in the R caret package was trained in order to make predictions for the class for the "pml-testing" dataset. In addition, summary statistics for the model analysis are seen below.
 
 ```{r cache=TRUE, warning=FALSE, message=FALSE}
@@ -50,7 +45,7 @@ plot(modelvar, top = 20, xlab="Importance (as % of most important)")
 
 Generally the belt and dumbbell measurements are more important for prediction, but the forearm plays a role as well. The high in sample accuracy on the taring set was encouraging, but needed more validation.   
 
-#####Testing    
+##### Testing    
 In order to estimate the out of sample error, and cross-validate the feature selection, data processing, and prediction algorithm, the same procedure was used on the held back test set. 25% of the total trainin data was used for validation.
 
 ```{r}
@@ -61,10 +56,10 @@ confusionMatrix(predictions, testing2$classe)
 
 the **out of sample accuracy is `r round(postResample(predictions, testing2$classe)[[1]], 3)`**. Thus the estimate for general out of sample error is expected to be fairly similar, provided the data are collected in the same manner. The out of sample error, by other measures, as seen in the statistics table above, is also negligible. Clearly motion sensors and rigorous analysis of the data provided can achieve excellent preditions it determining some common error in weightlifting.
 
-###Conclusions
+### Conclusions
 It is unlikely that all of the 52 well populated variables were truly needed to obtain an accurate prediction of the class of dumbbell lifting mistake, but the predictive power and accuracy was quite good using all of the variables. And clearly at least three types of general measurements needed to be used, as the classification categories included both hip, arm and dumbbell positioning mistakes. Ranging the variables to all be on a similar scale seemed to be all the preprocessing needed, and in fact more exotic methods provided a poorer predictive performance. In the end, all 20 of the examples requested were predicted correctly, which was the goal.
 
-###References
+### References
 1. Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 2. R, version 3.0.3, R Core Team (2013). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. [http://www.R-project.org/](http://www.R-project.org/).
 3. RStudio, version 0.98.501
