@@ -4,6 +4,7 @@ For the first part of the assignment we were to work with an sqlite3 database fi
 
 
 **Problem Set 1 - Basic Relational Algebra**
+
 a.  Write a SQL statement to select the records where the docid = 10398_txt_earn. Report the count of the records returned.
 
 ```SQL
