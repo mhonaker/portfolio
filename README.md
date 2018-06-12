@@ -1,4 +1,4 @@
-##Collections
+## Collections
 
 This repo is a collection of small projects and investigations. For the most part, these projects were completed as part of coursework, though not exclusively. I have denoted in each case when the work was not my own. Below is brief summary of items that may be found here.
  I also have a repo for a current independent project, [hetaira](https://github.com/mhonaker/hetaira).
